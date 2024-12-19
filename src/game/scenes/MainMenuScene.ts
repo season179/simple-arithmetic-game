@@ -5,12 +5,24 @@ export class MainMenuScene extends Scene {
         super({ key: "MainMenuScene" });
     }
 
+    preload() {
+        this.load.image("logo", "images/math-adventure.webp");
+    }
+
     create() {
         const { width, height } = this.scale;
 
+        // Logo
+        const logo = this.add.image(width * 0.5, height * 0.15, "logo");
+        const scale = Math.min(
+            (width * 0.4) / logo.width,
+            (height * 0.15) / logo.height
+        );
+        logo.setScale(scale);
+
         // Title
         this.add
-            .text(width * 0.5, height * 0.3, "Math Adventure!", {
+            .text(width * 0.5, height * 0.35, "Math Adventure!", {
                 fontSize: "48px",
                 color: "#2563eb",
                 fontFamily: "Arial",
@@ -19,7 +31,7 @@ export class MainMenuScene extends Scene {
 
         // Subtitle
         this.add
-            .text(width * 0.5, height * 0.4, "Choose Your Level:", {
+            .text(width * 0.5, height * 0.45, "Choose Your Level:", {
                 fontSize: "32px",
                 color: "#4b5563",
                 fontFamily: "Arial",
@@ -29,7 +41,7 @@ export class MainMenuScene extends Scene {
         // Create buttons with rectangles for better click areas
         this.createButton(
             width * 0.5,
-            height * 0.55,
+            height * 0.6,
             "5 Years Old",
             "#047857",
             "#ecfdf5",
@@ -39,7 +51,7 @@ export class MainMenuScene extends Scene {
 
         this.createButton(
             width * 0.5,
-            height * 0.7,
+            height * 0.75,
             "8 Years Old",
             "#7c3aed",
             "#f5f3ff",

@@ -47,13 +47,13 @@ export class GameScene extends Scene {
         fontFamily: 'Arial'
       }),
       // Problem text centered horizontally, upper portion of screen
-      problemText: this.add.text(400, 200, '', {
+      problemText: this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 100, '', {
         fontSize: '48px',
         color: '#1e40af',
         fontFamily: 'Arial'
       }).setOrigin(0.5),
       // Feedback text below problem (correct/incorrect messages)
-      feedbackText: this.add.text(400, 300, '', {
+      feedbackText: this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '', {
         fontSize: '32px',
         fontFamily: 'Arial'
       }).setOrigin(0.5),
@@ -94,10 +94,10 @@ export class GameScene extends Scene {
     // Clear existing buttons
     this.gameObjects.buttons.removeAll(true);
 
-    const buttonWidth = 100;
-    const spacing = 120;
-    const startX = 400 - ((choices.length - 1) * spacing) / 2;
-    const y = 400;
+    const buttonWidth = 120;
+    const spacing = 150;
+    const startX = this.cameras.main.centerX - ((choices.length - 1) * spacing) / 2;
+    const y = this.cameras.main.centerY + 150;
 
     choices.forEach((choice, index) => {
       const x = startX + index * spacing;

@@ -27,19 +27,26 @@ function generateNumbers(
 } {
     let num1: number;
     let num2: number;
-    let result: number;
+    let result = 0; // Initialize with default value
     let answer: number;
 
     if (ageGroup === 8) {
-        // For 8-year-olds: larger numbers up to 100
+        // For 8-year-olds: larger numbers up to 100 for addition/subtraction, multiplication tables up to 10
         if (operation === "+") {
             num1 = Math.floor(Math.random() * 50) + 1;
             num2 = Math.floor(Math.random() * (100 - num1)) + 1;
             result = num1 + num2;
-        } else {
+        } else if (operation === "-") {
             num1 = Math.floor(Math.random() * 100) + 1;
             num2 = Math.floor(Math.random() * num1) + 1;
             result = num1 - num2;
+        } else if (operation === "×") {
+            // For multiplication, use numbers 1-10 to keep it appropriate for 8-year-olds
+            num1 = Math.floor(Math.random() * 10) + 1;
+            num2 = Math.floor(Math.random() * 10) + 1;
+            result = num1 * num2;
+        } else {
+            throw new Error(`Unsupported operation: ${operation}`);
         }
     } else {
         // For 5-year-olds: keep simple number ranges
@@ -47,10 +54,12 @@ function generateNumbers(
             num1 = Math.floor(Math.random() * 5) + 1;
             num2 = Math.floor(Math.random() * 5) + 1;
             result = num1 + num2;
-        } else {
+        } else if (operation === "-") {
             num1 = Math.floor(Math.random() * 8) + 2;
             num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
             result = num1 - num2;
+        } else {
+            throw new Error(`Unsupported operation: ${operation}`);
         }
     }
 
@@ -73,13 +82,12 @@ function generateNumbers(
 }
 
 export function generateProblem(ageGroup: number = 5): Problem {
-    const operation: OperationType = Math.random() < 0.5 ? "+" : "-";
-    const format = getRandomProblemFormat();
-
-    // Only allow missingEnd and missingMiddle for subtraction
-    if (operation === "-" && format === "missingStart") {
-        return generateProblem(ageGroup); // Try again
-    }
+    // For multiplication, always use missingEnd format
+    // For addition and subtraction, use random format
+    const operation =
+        Math.random() < 0.33 ? "×" : Math.random() < 0.5 ? "+" : "-";
+    const format: ProblemFormat =
+        operation === "×" ? "missingEnd" : getRandomProblemFormat();
 
     const { num1, num2, result, answer } = generateNumbers(
         ageGroup,

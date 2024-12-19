@@ -194,6 +194,10 @@ export class GameScene extends Scene {
                 }
                 return points;
             } else {
+                // For 8-year-olds
+                if (this.currentProblem.operation === "×") {
+                    return 4; // 4 points for multiplication
+                }
                 let points = this.currentProblem.result <= 10 ? 1 : 2;
                 if (this.currentProblem.format !== "missingEnd") {
                     points += 1;

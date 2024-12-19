@@ -181,6 +181,9 @@ export class GameScene extends Scene {
 
         if ("sequence" in this.currentProblem) {
             // Points for sequence problems
+            if (this.state.ageGroup === 8) {
+                return 3; // Higher points for 8-year-olds
+            }
             return this.currentProblem.format === "numberSequence" ? 1 : 2;
         } else {
             // Points for math problems

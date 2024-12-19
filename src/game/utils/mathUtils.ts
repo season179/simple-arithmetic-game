@@ -82,10 +82,18 @@ function generateNumbers(
 }
 
 export function generateProblem(ageGroup: number = 5): Problem {
+    let operation: OperationType;
+    
+    if (ageGroup === 8) {
+        // For 8-year-olds: include multiplication
+        operation = Math.random() < 0.33 ? "×" : Math.random() < 0.5 ? "+" : "-";
+    } else {
+        // For 5-year-olds: only addition and subtraction
+        operation = Math.random() < 0.5 ? "+" : "-";
+    }
+
     // For multiplication, always use missingEnd format
     // For addition and subtraction, use random format
-    const operation =
-        Math.random() < 0.33 ? "×" : Math.random() < 0.5 ? "+" : "-";
     const format: ProblemFormat =
         operation === "×" ? "missingEnd" : getRandomProblemFormat();
 

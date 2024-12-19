@@ -1,22 +1,30 @@
 import { useEffect } from "react";
 import Phaser from "phaser";
 import { gameConfig } from "./game/config";
-import { MainMenuScene } from "./game/scenes/MainMenuScene";
-import { GameScene } from "./game/scenes/GameScene";
-import { GameOverScene } from "./game/scenes/GameOverScene";
 
 function App() {
     useEffect(() => {
-        const config = {
-            ...gameConfig,
-            scene: [MainMenuScene, GameScene, GameOverScene],
+        const initGame = async () => {
+            const [{ MainMenuScene }, { GameScene }, { GameOverScene }] =
+                await Promise.all([
+                    import("./game/scenes/MainMenuScene"),
+                    import("./game/scenes/GameScene"),
+                    import("./game/scenes/GameOverScene"),
+                ]);
+
+            const config = {
+                ...gameConfig,
+                scene: [MainMenuScene, GameScene, GameOverScene],
+            };
+
+            const game = new Phaser.Game(config);
+
+            return () => {
+                game.destroy(true);
+            };
         };
 
-        const game = new Phaser.Game(config);
-
-        return () => {
-            game.destroy(true);
-        };
+        initGame();
     }, []);
 
     return <div id="game-container" />;

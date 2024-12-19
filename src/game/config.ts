@@ -11,8 +11,8 @@ export const gameConfig: Types.Core.GameConfig = {
   // ID of the DOM element where the game canvas will be injected
   parent: 'game-container',
   // Base canvas dimensions - will be scaled according to screen size
-  width: 800,
-  height: 600,
+  width: 1920,
+  height: 1080,
   // Light blue background matching the React container
   backgroundColor: '#f0f9ff',
   scale: {
@@ -26,7 +26,7 @@ export const gameConfig: Types.Core.GameConfig = {
     default: 'arcade',
     arcade: {
       // No gravity needed for this 2D arithmetic game
-      gravity: { y: 0 },
+      gravity: { x: 0, y: 0 },
       // Set to true during development to visualize physics bodies
       debug: false
     }

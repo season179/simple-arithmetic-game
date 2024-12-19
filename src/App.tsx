@@ -3,7 +3,7 @@
  * This component serves as the bridge between React and Phaser, handling game lifecycle.
  */
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import Phaser from 'phaser';
 import { gameConfig } from './game/config';
 import { MainMenuScene } from './game/scenes/MainMenuScene';

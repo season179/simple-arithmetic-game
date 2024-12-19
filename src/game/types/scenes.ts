@@ -10,6 +10,7 @@ export interface GameSceneObjects {
 
 export interface GameState {
   score: number;
+  ageGroup: number;
 }
 
 export interface ButtonConfig {

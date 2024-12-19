@@ -16,7 +16,8 @@ export class GameScene extends Scene {
   private gameObjects?: GameSceneObjects;
   // Game state tracking (score, etc.)
   private state: GameState = {
-    score: 0
+    score: 0,
+    ageGroup: 5
   };
 
   constructor() {
@@ -27,7 +28,8 @@ export class GameScene extends Scene {
    * Called by Phaser when the scene starts.
    * Sets up the game UI and creates the first problem.
    */
-  create(): void {
+  create(data: { ageGroup: number }): void {
+    this.state.ageGroup = data.ageGroup || 5;
     this.initializeGameObjects();
     this.createNewProblem();
   }

@@ -77,11 +77,53 @@ function generateAlphabetSequence(): SequenceProblem {
     };
 }
 
-export function generateSequenceProblem(): SequenceProblem {
-    // Randomly choose between number and alphabet sequence
-    return Math.random() < 0.5
-        ? generateNumberSequence()
-        : generateAlphabetSequence();
+function generateNumberSequenceForEightYearOld(): SequenceProblem {
+    const direction = getRandomDirection();
+    const length = getRandomSequenceLength();
+
+    // For 8-year-olds, use larger numbers and gaps
+    let start: number;
+    let step: number;
+
+    if (direction === "ascending") {
+        start = Math.floor(Math.random() * 30) + 1; // Start with 1-30
+        step = Math.floor(Math.random() * 19) + 2; // Gap between 2-20
+    } else {
+        start = Math.floor(Math.random() * 50) + 51; // Start with 51-100
+        step = Math.floor(Math.random() * 19) + 2; // Gap between 2-20
+    }
+
+    const sequence = Array.from({ length }, (_, i) => {
+        if (direction === "ascending") {
+            return String(start + i * step);
+        } else {
+            return String(start - i * step);
+        }
+    });
+
+    const missingIndex = Math.floor(Math.random() * length);
+    const answer = sequence[missingIndex];
+    sequence[missingIndex] = "?";
+
+    return {
+        sequence,
+        answer,
+        format: "numberSequence",
+        direction,
+        missingIndex,
+        points: 4, // 4 points for correct sequence answer
+    };
+}
+
+export function generateSequenceProblem(age: number): SequenceProblem {
+    if (age === 8) {
+        return generateNumberSequenceForEightYearOld();
+    } else {
+        // Randomly choose between number and alphabet sequence
+        return Math.random() < 0.5
+            ? generateNumberSequence()
+            : generateAlphabetSequence();
+    }
 }
 
 export function generateSequenceChoices(

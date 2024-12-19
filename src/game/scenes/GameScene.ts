@@ -75,9 +75,11 @@ export class GameScene extends Scene {
     private createNewProblem(): void {
         if (!this.gameObjects) return;
 
-        // For 5-year-olds, 40% chance of sequence problems
-        if (this.state.ageGroup === 5 && Math.random() < 0.4) {
-            const sequenceProblem = generateSequenceProblem();
+        // 40% chance of sequence problems for both age groups
+        if (Math.random() < 0.4) {
+            const sequenceProblem = generateSequenceProblem(
+                this.state.ageGroup
+            );
             this.currentProblem = sequenceProblem;
 
             // Display the sequence problem

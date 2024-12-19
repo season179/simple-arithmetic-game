@@ -25,4 +25,5 @@ export type SequenceProblem = {
     format: ProblemFormat;
     direction: SequenceDirection;
     missingIndex: number;
+    points?: number; // Optional points field for scoring
 };

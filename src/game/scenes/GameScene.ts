@@ -39,6 +39,18 @@ export class GameScene extends Scene {
   private initializeGameObjects(): void {
     const buttonsContainer = this.add.container(0, 0);
 
+    // Add End Game button in top-right corner
+    const endGameButton = this.add.text(this.cameras.main.width - 16, 16, 'End Game', {
+      fontSize: '24px',
+      color: '#dc2626',
+      backgroundColor: '#fee2e2',
+      padding: { x: 12, y: 8 },
+      fontFamily: 'Arial'
+    })
+      .setOrigin(1, 0)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => this.endGame());
+
     this.gameObjects = {
       // Score display in top-left corner
       scoreText: this.add.text(16, 16, 'Score: 0', {
@@ -58,7 +70,9 @@ export class GameScene extends Scene {
         fontFamily: 'Arial'
       }).setOrigin(0.5),
       // Container for answer buttons
-      buttons: buttonsContainer
+      buttons: buttonsContainer,
+      // End game button reference
+      endGameButton: endGameButton
     };
   }
 
@@ -155,5 +169,26 @@ export class GameScene extends Scene {
     this.gameObjects.feedbackText
       .setText('Try again! 💪')
       .setColor('#dc2626');
+  }
+
+  private endGame(): void {
+    if (!this.gameObjects) return;
+
+    // Show final score
+    this.gameObjects.problemText.setText('Game Over!');
+    this.gameObjects.feedbackText
+      .setText(`Final Score: ${this.state.score}`)
+      .setColor('#1e40af');
+
+    // Remove answer buttons
+    this.gameObjects.buttons.removeAll(true);
+
+    // Disable the end game button
+    this.gameObjects.endGameButton.setVisible(false);
+
+    // Return to main menu after a short delay
+    this.time.delayedCall(2000, () => {
+      this.scene.start('MainMenuScene');
+    });
   }
 }

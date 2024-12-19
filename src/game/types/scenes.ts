@@ -5,6 +5,7 @@ export interface GameSceneObjects {
   problemText: GameObjects.Text;
   feedbackText: GameObjects.Text;
   buttons: GameObjects.Container;
+  endGameButton: GameObjects.Text;
 }
 
 export interface GameState {

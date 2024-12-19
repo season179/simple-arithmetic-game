@@ -79,15 +79,13 @@ export class GameScene extends Scene {
   }
 
   /**
-   * Creates a new arithmetic problem and its multiple choice answers.
-   * Updates the UI to display the new problem and answer choices.
+   * Creates a new arithmetic problem and updates the UI.
    */
   private createNewProblem(): void {
     if (!this.gameObjects) return;
 
-    // Generate new problem and answer choices
-    this.currentProblem = generateProblem();
-    const choices = generateChoices(this.currentProblem.answer);
+    // Generate new problem with appropriate difficulty for age group
+    this.currentProblem = generateProblem(this.state.ageGroup);
     
     // Update problem text
     this.gameObjects.problemText.setText(
@@ -95,6 +93,9 @@ export class GameScene extends Scene {
     );
     // Clear feedback text
     this.gameObjects.feedbackText.setText('');
+    
+    // Generate and shuffle answer choices appropriate for age group
+    const choices = generateChoices(this.currentProblem.answer, this.state.ageGroup);
     
     // Create answer buttons
     this.createAnswerButtons(choices);

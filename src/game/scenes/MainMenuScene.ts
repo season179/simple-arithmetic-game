@@ -45,20 +45,24 @@ export class MainMenuScene extends Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
-    // Coming soon text for 8-year-old option
-    this.add.text(centerX + 120, centerY + 80, '(Coming Soon!)', {
-      fontSize: '24px',
-      color: '#9ca3af',
-      fontFamily: 'Arial'
-    }).setOrigin(0, 0.5);
-
+    // Add click handlers
     youngButton.on('pointerdown', () => {
       this.scene.start('GameScene', { ageGroup: 5 });
     });
 
     olderButton.on('pointerdown', () => {
-      // Temporarily disabled - will be implemented later
-      // this.scene.start('GameScene', { ageGroup: 8 });
+      this.scene.start('GameScene', { ageGroup: 8 });
+    });
+
+    // Add hover effects
+    [youngButton, olderButton].forEach(button => {
+      button.on('pointerover', () => {
+        button.setStyle({ backgroundColor: button === youngButton ? '#d1fae5' : '#ede9fe' });
+      });
+
+      button.on('pointerout', () => {
+        button.setStyle({ backgroundColor: button === youngButton ? '#ecfdf5' : '#f5f3ff' });
+      });
     });
   }
 }

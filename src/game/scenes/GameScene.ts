@@ -1,197 +1,238 @@
-/**
- * Main gameplay scene where arithmetic problems are presented and solved.
- * Manages the game state, problem generation, scoring, and user feedback.
- */
-
-import { Scene } from 'phaser';
-import { generateProblem, generateChoices } from '../utils/mathUtils';
-import { Problem } from '../types';
-import { GameSceneObjects, GameState } from '../types/scenes';
-import { AnswerButton } from '../components/AnswerButton';
+import { Scene } from "phaser";
+import { generateProblem, generateChoices } from "../utils/mathUtils";
+import {
+    generateSequenceProblem,
+    generateSequenceChoices,
+} from "../utils/sequenceUtils";
+import { Problem, SequenceProblem } from "../types";
+import { GameSceneObjects, GameState } from "../types/scenes";
+import { AnswerButton } from "../components/AnswerButton";
 
 export class GameScene extends Scene {
-  // Current arithmetic problem being displayed
-  private currentProblem?: Problem;
-  // Collection of UI game objects for easy access
-  private gameObjects?: GameSceneObjects;
-  // Game state tracking (score, etc.)
-  private state: GameState = {
-    score: 0,
-    ageGroup: 5
-  };
-
-  constructor() {
-    super({ key: 'GameScene' });
-  }
-
-  /**
-   * Called by Phaser when the scene starts.
-   * Sets up the game UI and creates the first problem.
-   */
-  create(data: { ageGroup: number }): void {
-    this.state.ageGroup = data.ageGroup || 5;
-    this.initializeGameObjects();
-    this.createNewProblem();
-  }
-
-  /**
-   * Initializes all UI elements needed for the game.
-   * Creates and positions score display, problem text, and feedback text.
-   */
-  private initializeGameObjects(): void {
-    const buttonsContainer = this.add.container(0, 0);
-
-    // Add End Game button in top-right corner
-    const endGameButton = this.add.text(this.cameras.main.width - 16, 16, 'End Game', {
-      fontSize: '24px',
-      color: '#dc2626',
-      backgroundColor: '#fee2e2',
-      padding: { x: 12, y: 8 },
-      fontFamily: 'Arial'
-    })
-      .setOrigin(1, 0)
-      .setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.endGame());
-
-    this.gameObjects = {
-      // Score display in top-left corner
-      scoreText: this.add.text(16, 16, 'Score: 0', {
-        fontSize: '32px',
-        color: '#1e40af',
-        fontFamily: 'Arial'
-      }),
-      // Problem text centered horizontally, upper portion of screen
-      problemText: this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 100, '', {
-        fontSize: '48px',
-        color: '#1e40af',
-        fontFamily: 'Arial'
-      }).setOrigin(0.5),
-      // Feedback text below problem (correct/incorrect messages)
-      feedbackText: this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '', {
-        fontSize: '32px',
-        fontFamily: 'Arial'
-      }).setOrigin(0.5),
-      // Container for answer buttons
-      buttons: buttonsContainer,
-      // End game button reference
-      endGameButton: endGameButton
+    private currentProblem?: Problem | SequenceProblem;
+    private gameObjects?: GameSceneObjects;
+    private state: GameState = {
+        score: 0,
+        ageGroup: 5,
     };
-  }
 
-  /**
-   * Creates a new arithmetic problem and updates the UI.
-   */
-  private createNewProblem(): void {
-    if (!this.gameObjects) return;
-
-    // Generate new problem with appropriate difficulty for age group
-    this.currentProblem = generateProblem(this.state.ageGroup);
-    
-    // Update problem text
-    this.gameObjects.problemText.setText(
-      `${this.currentProblem.num1} ${this.currentProblem.operation} ${this.currentProblem.num2} = ?`
-    );
-    // Clear feedback text
-    this.gameObjects.feedbackText.setText('');
-    
-    // Generate and shuffle answer choices appropriate for age group
-    const choices = generateChoices(this.currentProblem.answer, this.state.ageGroup);
-    
-    // Create answer buttons
-    this.createAnswerButtons(choices);
-  }
-
-  /**
-   * Creates answer buttons for the current problem.
-   * Positions buttons horizontally across the screen.
-   */
-  private createAnswerButtons(choices: number[]): void {
-    if (!this.gameObjects) return;
-
-    // Clear existing buttons
-    this.gameObjects.buttons.removeAll(true);
-
-    const buttonWidth = 120;
-    const spacing = 150;
-    const startX = this.cameras.main.centerX - ((choices.length - 1) * spacing) / 2;
-    const y = this.cameras.main.centerY + 150;
-
-    choices.forEach((choice, index) => {
-      const x = startX + index * spacing;
-      
-      new AnswerButton(this, {
-        x,
-        y,
-        width: buttonWidth,
-        value: choice,
-        onClick: (value) => this.checkAnswer(value)
-      });
-    });
-  }
-
-  /**
-   * Checks if the user's answer is correct.
-   * Updates the game state and UI accordingly.
-   */
-  private checkAnswer(choice: number): void {
-    if (!this.currentProblem || !this.gameObjects) return;
-
-    if (choice === this.currentProblem.answer) {
-      this.handleCorrectAnswer();
-    } else {
-      this.handleIncorrectAnswer();
+    constructor() {
+        super({ key: "GameScene" });
     }
 
-    // Create new problem after a delay
-    this.time.delayedCall(1500, () => {
-      this.createNewProblem();
-    });
-  }
+    create(data: { ageGroup: number }): void {
+        // Reset score and set age group when starting a new game
+        this.state = {
+            score: 0,
+            ageGroup: data.ageGroup || 5,
+        };
 
-  /**
-   * Handles the case where the user answers correctly.
-   * Increments the score and displays a success message.
-   */
-  private handleCorrectAnswer(): void {
-    if (!this.gameObjects) return;
+        this.createGameObjects();
+        this.createNewProblem();
+    }
 
-    this.state.score += 10;
-    this.gameObjects.scoreText.setText(`Score: ${this.state.score}`);
-    this.gameObjects.feedbackText
-      .setText('Correct! 🌟')
-      .setColor('#047857');
-  }
+    private createGameObjects(): void {
+        const { width, height } = this.scale;
+        const buttonsContainer = this.add.container(0, 0);
 
-  /**
-   * Handles the case where the user answers incorrectly.
-   * Displays an error message.
-   */
-  private handleIncorrectAnswer(): void {
-    if (!this.gameObjects) return;
+        // End Game button with background
+        const endGameButton = this.add
+            .text(width - 16, 16, "End Game", {
+                fontSize: "24px",
+                color: "#dc2626",
+                backgroundColor: "#fee2e2",
+                padding: { x: 12, y: 8 },
+                fontFamily: "Arial",
+            })
+            .setOrigin(1, 0)
+            .setInteractive({ useHandCursor: true })
+            .on("pointerdown", () => this.endGame());
 
-    this.gameObjects.feedbackText
-      .setText('Try again! 💪')
-      .setColor('#dc2626');
-  }
+        this.gameObjects = {
+            scoreText: this.add.text(16, 16, "Score: 0", {
+                fontSize: "32px",
+                color: "#1e40af",
+                fontFamily: "Arial",
+            }),
+            problemText: this.add
+                .text(width * 0.5, height * 0.3, "", {
+                    fontSize: "48px",
+                    color: "#1e40af",
+                    fontFamily: "Arial",
+                })
+                .setOrigin(0.5),
+            feedbackText: this.add
+                .text(width * 0.5, height * 0.45, "", {
+                    fontSize: "32px",
+                    fontFamily: "Arial",
+                })
+                .setOrigin(0.5),
+            buttons: buttonsContainer,
+            endGameButton,
+        };
+    }
 
-  private endGame(): void {
-    if (!this.gameObjects) return;
+    private createNewProblem(): void {
+        if (!this.gameObjects) return;
 
-    // Show final score
-    this.gameObjects.problemText.setText('Game Over!');
-    this.gameObjects.feedbackText
-      .setText(`Final Score: ${this.state.score}`)
-      .setColor('#1e40af');
+        // For 5-year-olds, 40% chance of sequence problems
+        if (this.state.ageGroup === 5 && Math.random() < 0.4) {
+            const sequenceProblem = generateSequenceProblem();
+            this.currentProblem = sequenceProblem;
 
-    // Remove answer buttons
-    this.gameObjects.buttons.removeAll(true);
+            // Display the sequence problem
+            const sequenceText = sequenceProblem.sequence.join(" ");
+            const directionArrow =
+                sequenceProblem.direction === "ascending" ? "→" : "←";
 
-    // Disable the end game button
-    this.gameObjects.endGameButton.setVisible(false);
+            this.gameObjects.problemText.setText(
+                `Complete the sequence ${directionArrow}\n${sequenceText}`
+            );
 
-    // Return to main menu after a short delay
-    this.time.delayedCall(2000, () => {
-      this.scene.start('MainMenuScene');
-    });
-  }
+            // Generate and display choices for the sequence
+            const choices = generateSequenceChoices(
+                sequenceProblem.answer,
+                sequenceProblem.format
+            );
+            this.createAnswerButtons(choices);
+        } else {
+            // Create math problem
+            const mathProblem = generateProblem(this.state.ageGroup);
+            this.currentProblem = mathProblem;
+
+            this.gameObjects.problemText.setText(
+                this.formatMathProblem(mathProblem)
+            );
+
+            const choices = generateChoices(
+                mathProblem.answer,
+                this.state.ageGroup
+            );
+            this.createAnswerButtons(choices.map(String));
+        }
+
+        this.gameObjects.feedbackText.setText("");
+    }
+
+    private formatMathProblem(problem: Problem): string {
+        const { num1, num2, operation, format, result } = problem;
+
+        switch (format) {
+            case "missingEnd":
+                return `${num1} ${operation} ${num2} = ?`;
+            case "missingMiddle":
+                return `${num1} ${operation} ? = ${result}`;
+            case "missingStart":
+                return `? ${operation} ${num2} = ${result}`;
+            default:
+                return `${num1} ${operation} ${num2} = ?`;
+        }
+    }
+
+    private createAnswerButtons(choices: string[]): void {
+        if (!this.gameObjects) return;
+
+        // Clear existing buttons
+        this.gameObjects.buttons.removeAll(true);
+
+        const { width, height } = this.scale;
+        const buttonWidth = Math.min(width * 0.15, 120);
+        const spacing = Math.min(width * 0.2, 150);
+        const startX = width * 0.5 - ((choices.length - 1) * spacing) / 2;
+        const y = height * 0.7;
+
+        choices.forEach((choice, index) => {
+            const x = startX + index * spacing;
+            new AnswerButton(this, {
+                x,
+                y,
+                width: buttonWidth,
+                value: choice,
+                onClick: (value) => this.checkAnswer(value),
+            });
+        });
+    }
+
+    private checkAnswer(choice: string | number): void {
+        if (!this.currentProblem || !this.gameObjects) return;
+
+        const isSequenceProblem = "sequence" in this.currentProblem;
+        const isCorrect = isSequenceProblem
+            ? choice === this.currentProblem.answer
+            : (typeof choice === "string" ? parseInt(choice) : choice) ===
+              this.currentProblem.answer;
+
+        if (isCorrect) {
+            this.handleCorrectAnswer();
+        } else {
+            this.handleIncorrectAnswer();
+        }
+
+        // Create new problem after a delay
+        this.time.delayedCall(1500, () => {
+            this.createNewProblem();
+        });
+    }
+
+    private calculatePoints(): number {
+        if (!this.currentProblem) return 0;
+
+        if ("sequence" in this.currentProblem) {
+            // Points for sequence problems
+            return this.currentProblem.format === "numberSequence" ? 1 : 2;
+        } else {
+            // Points for math problems
+            if (this.state.ageGroup === 5) {
+                let points = this.currentProblem.operation === "+" ? 1 : 2;
+                if (this.currentProblem.format !== "missingEnd") {
+                    points += 1;
+                }
+                return points;
+            } else {
+                let points = this.currentProblem.result <= 10 ? 1 : 2;
+                if (this.currentProblem.format !== "missingEnd") {
+                    points += 1;
+                }
+                return points;
+            }
+        }
+    }
+
+    private handleCorrectAnswer(): void {
+        if (!this.gameObjects || !this.currentProblem) return;
+
+        const points = this.calculatePoints();
+        this.state.score += points;
+
+        // Update score display
+        this.gameObjects.scoreText.setText(`Score: ${this.state.score}`);
+
+        // Show feedback with points earned
+        const stars = "🌟".repeat(points);
+        this.gameObjects.feedbackText
+            .setText(`${stars} Correct! +${points} points`)
+            .setColor("#047857");
+    }
+
+    private handleIncorrectAnswer(): void {
+        if (!this.gameObjects) return;
+
+        // Show encouraging message for wrong answer
+        const message =
+            this.state.ageGroup === 5
+                ? "Try again! 💪"
+                : "Not quite! Try again! 💪";
+
+        this.gameObjects.feedbackText.setText(message).setColor("#dc2626");
+    }
+
+    private endGame(): void {
+        if (!this.gameObjects) return;
+
+        // Transition to GameOverScene with final score and age group
+        this.scene.start("GameOverScene", {
+            score: this.state.score,
+            ageGroup: this.state.ageGroup,
+        });
+    }
 }

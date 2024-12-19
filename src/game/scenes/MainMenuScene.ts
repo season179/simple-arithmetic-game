@@ -1,68 +1,101 @@
-import { Scene } from 'phaser';
+import { Scene } from "phaser";
 
 export class MainMenuScene extends Scene {
-  constructor() {
-    super({ key: 'MainMenuScene' });
-  }
+    constructor() {
+        super({ key: "MainMenuScene" });
+    }
 
-  create() {
-    const centerX = this.cameras.main.centerX;
-    const centerY = this.cameras.main.centerY;
+    create() {
+        const { width, height } = this.scale;
 
-    // Title
-    this.add.text(centerX, centerY - 150, 'Math Adventure!', {
-      fontSize: '48px',
-      color: '#2563eb',
-      fontFamily: 'Arial'
-    }).setOrigin(0.5);
+        // Title
+        this.add
+            .text(width * 0.5, height * 0.3, "Math Adventure!", {
+                fontSize: "48px",
+                color: "#2563eb",
+                fontFamily: "Arial",
+            })
+            .setOrigin(0.5);
 
-    // Subtitle
-    this.add.text(centerX, centerY - 80, 'Choose Your Level:', {
-      fontSize: '32px',
-      color: '#4b5563',
-      fontFamily: 'Arial'
-    }).setOrigin(0.5);
+        // Subtitle
+        this.add
+            .text(width * 0.5, height * 0.4, "Choose Your Level:", {
+                fontSize: "32px",
+                color: "#4b5563",
+                fontFamily: "Arial",
+            })
+            .setOrigin(0.5);
 
-    // 5-year-old button
-    const youngButton = this.add.text(centerX, centerY, '5 Years Old', {
-      fontSize: '32px',
-      color: '#047857',
-      backgroundColor: '#ecfdf5',
-      padding: { x: 20, y: 10 },
-      fontFamily: 'Arial'
-    })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+        // Create buttons with rectangles for better click areas
+        this.createButton(
+            width * 0.5,
+            height * 0.55,
+            "5 Years Old",
+            "#047857",
+            "#ecfdf5",
+            "#d1fae5",
+            () => this.scene.start("GameScene", { ageGroup: 5 })
+        );
 
-    // 8-year-old button
-    const olderButton = this.add.text(centerX, centerY + 80, '8 Years Old', {
-      fontSize: '32px',
-      color: '#7c3aed',
-      backgroundColor: '#f5f3ff',
-      padding: { x: 20, y: 10 },
-      fontFamily: 'Arial'
-    })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+        this.createButton(
+            width * 0.5,
+            height * 0.7,
+            "8 Years Old",
+            "#7c3aed",
+            "#f5f3ff",
+            "#ede9fe",
+            () => this.scene.start("GameScene", { ageGroup: 8 })
+        );
+    }
 
-    // Add click handlers
-    youngButton.on('pointerdown', () => {
-      this.scene.start('GameScene', { ageGroup: 5 });
-    });
+    private createButton(
+        x: number,
+        y: number,
+        text: string,
+        textColor: string,
+        bgColor: string,
+        hoverColor: string,
+        onClick: () => void
+    ) {
+        const padding = { x: 20, y: 10 };
 
-    olderButton.on('pointerdown', () => {
-      this.scene.start('GameScene', { ageGroup: 8 });
-    });
+        // Create text first to get its width for the background
+        const buttonText = this.add
+            .text(x, y, text, {
+                fontSize: "32px",
+                color: textColor,
+                fontFamily: "Arial",
+            })
+            .setOrigin(0.5);
 
-    // Add hover effects
-    [youngButton, olderButton].forEach(button => {
-      button.on('pointerover', () => {
-        button.setStyle({ backgroundColor: button === youngButton ? '#d1fae5' : '#ede9fe' });
-      });
+        // Create background rectangle
+        const background = this.add
+            .rectangle(
+                x,
+                y,
+                buttonText.width + padding.x * 2,
+                buttonText.height + padding.y * 2,
+                this.hexStringToNumber(bgColor)
+            )
+            .setInteractive({ useHandCursor: true });
 
-      button.on('pointerout', () => {
-        button.setStyle({ backgroundColor: button === youngButton ? '#ecfdf5' : '#f5f3ff' });
-      });
-    });
-  }
+        // Make sure text is above background
+        buttonText.setDepth(1);
+
+        // Add hover effects
+        background.on("pointerover", () => {
+            background.setFillStyle(this.hexStringToNumber(hoverColor));
+        });
+
+        background.on("pointerout", () => {
+            background.setFillStyle(this.hexStringToNumber(bgColor));
+        });
+
+        // Add click handler
+        background.on("pointerdown", onClick);
+    }
+
+    private hexStringToNumber(hex: string): number {
+        return parseInt(hex.replace("#", ""), 16);
+    }
 }

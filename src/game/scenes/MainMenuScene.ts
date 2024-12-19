@@ -6,7 +6,7 @@ export class MainMenuScene extends Scene {
     }
 
     preload() {
-        this.load.image("logo", "images/math-adventure.webp");
+        this.load.image("logo", "/math-adventure.webp");
     }
 
     create() {

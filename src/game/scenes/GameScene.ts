@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import posthog from 'posthog-js';
 import { generateProblem, generateChoices } from "../utils/mathUtils";
 import {
     generateSequenceProblem,
@@ -26,6 +27,11 @@ export class GameScene extends Scene {
             score: 0,
             ageGroup: data.ageGroup || 5,
         };
+
+        // Track game start
+        posthog.capture('game_started', {
+            age_group: this.state.ageGroup
+        });
 
         this.createGameObjects();
         this.createNewProblem();
@@ -164,6 +170,14 @@ export class GameScene extends Scene {
             : (typeof choice === "string" ? parseInt(choice) : choice) ===
               this.currentProblem.answer;
 
+        // Track answer attempt
+        posthog.capture('answer_submitted', {
+            age_group: this.state.ageGroup,
+            problem_type: 'sequence' in this.currentProblem ? 'sequence' : 'math',
+            is_correct: isCorrect,
+            score: this.state.score
+        });
+
         if (isCorrect) {
             this.handleCorrectAnswer();
         } else {
@@ -236,7 +250,11 @@ export class GameScene extends Scene {
     }
 
     private endGame(): void {
-        if (!this.gameObjects) return;
+        // Track game end
+        posthog.capture('game_ended', {
+            age_group: this.state.ageGroup,
+            final_score: this.state.score
+        });
 
         // Transition to GameOverScene with final score and age group
         this.scene.start("GameOverScene", {

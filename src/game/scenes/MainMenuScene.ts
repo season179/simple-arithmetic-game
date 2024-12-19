@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import posthog from 'posthog-js';
 
 export class MainMenuScene extends Scene {
     constructor() {
@@ -10,6 +11,9 @@ export class MainMenuScene extends Scene {
     }
 
     create() {
+        // Track menu view
+        posthog.capture('menu_viewed');
+
         const { width, height } = this.scale;
 
         // Logo
@@ -46,7 +50,10 @@ export class MainMenuScene extends Scene {
             "#047857",
             "#ecfdf5",
             "#d1fae5",
-            () => this.scene.start("GameScene", { ageGroup: 5 })
+            () => {
+                posthog.capture('level_selected', { age_group: 5 });
+                this.scene.start("GameScene", { ageGroup: 5 });
+            }
         );
 
         this.createButton(
@@ -56,7 +63,10 @@ export class MainMenuScene extends Scene {
             "#7c3aed",
             "#f5f3ff",
             "#ede9fe",
-            () => this.scene.start("GameScene", { ageGroup: 8 })
+            () => {
+                posthog.capture('level_selected', { age_group: 8 });
+                this.scene.start("GameScene", { ageGroup: 8 });
+            }
         );
     }
 

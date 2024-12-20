@@ -1,17 +1,18 @@
 import { Scene } from "phaser";
+import { getResponsiveFontSize, getResponsiveSize } from "../config";
 
 export class GameOverScene extends Scene {
     constructor() {
         super({ key: "GameOverScene" });
     }
 
-    create(data: { score: number; ageGroup: number }) {
+    create(data: { score: number; ageGroup: number }): void {
         const { width, height } = this.scale;
 
-        // Game Over Title
+        // Game Over Title with responsive font size
         this.add
             .text(width * 0.5, height * 0.15, "Game Over!", {
-                fontSize: "64px",
+                fontSize: `${getResponsiveFontSize(64)}px`,
                 color: "#2563eb",
                 fontFamily: "Arial Bold",
             })
@@ -20,7 +21,7 @@ export class GameOverScene extends Scene {
         // Final Score
         this.add
             .text(width * 0.5, height * 0.28, `Final Score: ${data.score}`, {
-                fontSize: "48px",
+                fontSize: `${getResponsiveFontSize(48)}px`,
                 color: "#1e40af",
                 fontFamily: "Arial",
             })
@@ -30,25 +31,17 @@ export class GameOverScene extends Scene {
         const scoringText = this.createScoringExplanation(data.ageGroup);
         const scoringExplanation = this.add
             .text(width * 0.5, height * 0.45, scoringText, {
-                fontSize: "24px",
+                fontSize: `${getResponsiveFontSize(24)}px`,
                 color: "#4b5563",
                 fontFamily: "Arial",
                 align: "center",
-                lineSpacing: 10,
+                lineSpacing: getResponsiveSize(10),
+                wordWrap: { width: width * 0.8 }
             })
             .setOrigin(0.5);
 
-        // Center the scoring explanation text
-        const lines = scoringText.split("\n");
-        const maxWidth = Math.max(
-            ...lines.map(
-                (line) => this.add.text(0, 0, line, { fontSize: "24px" }).width
-            )
-        );
-        scoringExplanation.setWordWrapWidth(maxWidth);
-
-        // Create buttons
-        this.createButton(
+        // Create responsive buttons
+        this.createResponsiveButton(
             width * 0.5,
             height * 0.7,
             "Play Again",
@@ -58,7 +51,7 @@ export class GameOverScene extends Scene {
             () => this.scene.start("GameScene", { ageGroup: data.ageGroup })
         );
 
-        this.createButton(
+        this.createResponsiveButton(
             width * 0.5,
             height * 0.8,
             "Main Menu",
@@ -68,7 +61,7 @@ export class GameOverScene extends Scene {
             () => this.scene.start("MainMenuScene")
         );
 
-        // Add resize event listener
+        // Add resize handler
         this.scale.on("resize", this.handleResize, this);
     }
 
@@ -92,11 +85,15 @@ export class GameOverScene extends Scene {
                 " Numbers up to 10: 1 point",
                 " Numbers over 10: 2 points",
                 " Missing Number Problems: 3 points",
+                " Multiplication: 4 points",
+                "",
+                "Sequence Challenges:",
+                " Number Sequences: 3 points",
             ].join("\n");
         }
     }
 
-    private createButton(
+    private createResponsiveButton(
         x: number,
         y: number,
         text: string,
@@ -104,19 +101,21 @@ export class GameOverScene extends Scene {
         bgColor: string,
         hoverColor: string,
         onClick: () => void
-    ): void {
-        const padding = { x: 20, y: 10 };
+    ): { text: Phaser.GameObjects.Text; background: Phaser.GameObjects.Rectangle } {
+        const fontSize = getResponsiveFontSize(32);
+        const padding = {
+            x: getResponsiveSize(20),
+            y: getResponsiveSize(10)
+        };
 
-        // Create text first to get its width for the background
         const buttonText = this.add
             .text(x, y, text, {
-                fontSize: "32px",
+                fontSize: `${fontSize}px`,
                 color: textColor,
                 fontFamily: "Arial",
             })
             .setOrigin(0.5);
 
-        // Create background rectangle
         const background = this.add
             .rectangle(
                 x,
@@ -125,49 +124,21 @@ export class GameOverScene extends Scene {
                 buttonText.height + padding.y * 2,
                 this.hexStringToNumber(bgColor)
             )
-            .setInteractive({ useHandCursor: true })
-            .setOrigin(0.5);
+            .setInteractive({ useHandCursor: true });
 
-        // Make sure text is above background
         buttonText.setDepth(1);
 
-        // Add hover effects
         background
-            .on("pointerover", () => {
-                background.setFillStyle(this.hexStringToNumber(hoverColor));
-            })
-            .on("pointerout", () => {
-                background.setFillStyle(this.hexStringToNumber(bgColor));
-            })
+            .on("pointerover", () => background.setFillStyle(this.hexStringToNumber(hoverColor)))
+            .on("pointerout", () => background.setFillStyle(this.hexStringToNumber(bgColor)))
             .on("pointerdown", onClick);
+
+        return { text: buttonText, background };
     }
 
     private handleResize(): void {
-        const { width, height } = this.scale;
-
-        // Update all text positions
-        this.children.list.forEach((child: Phaser.GameObjects.GameObject) => {
-            if (child instanceof Phaser.GameObjects.Text) {
-                const y = child.y / this.scale.height; // Get relative Y position
-                child.setPosition(width * 0.5, height * y);
-            } else if (child instanceof Phaser.GameObjects.Rectangle) {
-                // Find the associated text and update rectangle position
-                const associatedText = this.children.list.find(
-                    (text: Phaser.GameObjects.GameObject) =>
-                        text instanceof Phaser.GameObjects.Text &&
-                        Math.abs(
-                            (text as Phaser.GameObjects.Text).y -
-                                (child as Phaser.GameObjects.Rectangle).y
-                        ) < 1
-                );
-                if (associatedText) {
-                    child.setPosition(
-                        width * 0.5,
-                        (associatedText as Phaser.GameObjects.Text).y
-                    );
-                }
-            }
-        });
+        // Recreate the scene with new dimensions
+        this.scene.restart(this.scene.settings.data);
     }
 
     private hexStringToNumber(hex: string): number {

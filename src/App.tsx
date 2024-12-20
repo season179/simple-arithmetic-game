@@ -19,7 +19,15 @@ function App() {
 
             const game = new Phaser.Game(config);
 
+            // Handle resize events
+            const handleResize = () => {
+                game.scale.resize(window.innerWidth, window.innerHeight);
+            };
+
+            window.addEventListener('resize', handleResize);
+
             return () => {
+                window.removeEventListener('resize', handleResize);
                 game.destroy(true);
             };
         };
@@ -27,7 +35,9 @@ function App() {
         initGame();
     }, []);
 
-    return <div id="game-container" />;
+    return (
+        <div id="game-container" className="w-screen h-screen overflow-hidden touch-none" />
+    );
 }
 
 export default App;

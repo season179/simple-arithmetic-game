@@ -1,49 +1,69 @@
-import { Scene } from "phaser";
+import { Scene, GameObjects } from "phaser";
 import posthog from 'posthog-js';
+import { getResponsiveFontSize, getResponsiveSize } from "../config";
 
 export class MainMenuScene extends Scene {
+    private logo?: GameObjects.Image;
+    private title?: GameObjects.Text;
+    private subtitle?: GameObjects.Text;
+    private buttons: { text: GameObjects.Text; background: GameObjects.Rectangle }[] = [];
+
     constructor() {
         super({ key: "MainMenuScene" });
     }
 
-    preload() {
+    preload(): void {
         this.load.image("logo", "/math-adventure.webp");
     }
 
-    create() {
-        // Track menu view
+    create(): void {
         posthog.capture('menu_viewed');
 
         const { width, height } = this.scale;
 
-        // Logo
-        const logo = this.add.image(width * 0.5, height * 0.15, "logo");
-        const scale = Math.min(
-            (width * 0.4) / logo.width,
-            (height * 0.15) / logo.height
-        );
-        logo.setScale(scale);
+        // Create logo with responsive scaling
+        this.logo = this.add.image(width * 0.5, height * 0.15, "logo");
+        this.updateLogoScale();
 
-        // Title
-        this.add
+        // Title with increased font size
+        this.title = this.add
             .text(width * 0.5, height * 0.35, "Math Adventure!", {
-                fontSize: "48px",
+                fontSize: `${getResponsiveFontSize(56)}px`,
                 color: "#2563eb",
                 fontFamily: "Arial",
+                fontWeight: "bold"
             })
             .setOrigin(0.5);
 
-        // Subtitle
-        this.add
+        // Subtitle with increased font size
+        this.subtitle = this.add
             .text(width * 0.5, height * 0.45, "Choose Your Level:", {
-                fontSize: "32px",
+                fontSize: `${getResponsiveFontSize(38)}px`,
                 color: "#4b5563",
                 fontFamily: "Arial",
+                fontWeight: "bold"
             })
             .setOrigin(0.5);
 
-        // Create buttons with rectangles for better click areas
-        this.createButton(
+        // Create level selection buttons
+        this.createLevelButtons();
+
+        // Add resize handler
+        this.scale.on("resize", this.handleResize, this);
+    }
+
+    private createLevelButtons(): void {
+        const { width, height } = this.scale;
+
+        // Clear existing buttons
+        this.buttons.forEach(button => {
+            button.text.destroy();
+            button.background.destroy();
+        });
+        this.buttons = [];
+
+        // Create new buttons
+        const button5Years = this.createResponsiveButton(
             width * 0.5,
             height * 0.6,
             "5 Years Old",
@@ -56,7 +76,7 @@ export class MainMenuScene extends Scene {
             }
         );
 
-        this.createButton(
+        const button8Years = this.createResponsiveButton(
             width * 0.5,
             height * 0.75,
             "8 Years Old",
@@ -68,9 +88,11 @@ export class MainMenuScene extends Scene {
                 this.scene.start("GameScene", { ageGroup: 8 });
             }
         );
+
+        this.buttons.push(button5Years, button8Years);
     }
 
-    private createButton(
+    private createResponsiveButton(
         x: number,
         y: number,
         text: string,
@@ -78,43 +100,92 @@ export class MainMenuScene extends Scene {
         bgColor: string,
         hoverColor: string,
         onClick: () => void
-    ) {
-        const padding = { x: 20, y: 10 };
+    ): { text: GameObjects.Text; background: GameObjects.Rectangle } {
+        const fontSize = getResponsiveFontSize(38);
+        const padding = {
+            x: getResponsiveSize(30), // Increased horizontal padding
+            y: getResponsiveSize(15)  // Increased vertical padding
+        };
 
-        // Create text first to get its width for the background
         const buttonText = this.add
             .text(x, y, text, {
-                fontSize: "32px",
+                fontSize: `${fontSize}px`,
                 color: textColor,
                 fontFamily: "Arial",
+                fontWeight: "bold"
             })
             .setOrigin(0.5);
 
-        // Create background rectangle
+        // Make button background wider for better touch targets
+        const minWidth = Math.max(buttonText.width + padding.x * 2, getResponsiveSize(200));
         const background = this.add
             .rectangle(
                 x,
                 y,
-                buttonText.width + padding.x * 2,
+                minWidth,
                 buttonText.height + padding.y * 2,
                 this.hexStringToNumber(bgColor)
             )
             .setInteractive({ useHandCursor: true });
 
-        // Make sure text is above background
         buttonText.setDepth(1);
 
-        // Add hover effects
-        background.on("pointerover", () => {
-            background.setFillStyle(this.hexStringToNumber(hoverColor));
-        });
+        background
+            .on("pointerover", () => background.setFillStyle(this.hexStringToNumber(hoverColor)))
+            .on("pointerout", () => background.setFillStyle(this.hexStringToNumber(bgColor)))
+            .on("pointerdown", onClick);
 
-        background.on("pointerout", () => {
-            background.setFillStyle(this.hexStringToNumber(bgColor));
-        });
+        return { text: buttonText, background };
+    }
 
-        // Add click handler
-        background.on("pointerdown", onClick);
+    private updateLogoScale(): void {
+        if (!this.logo) return;
+
+        const { width, height } = this.scale;
+        
+        // Calculate maximum dimensions based on screen size
+        const maxLogoWidth = Math.min(
+            width * 0.4,  // 40% of screen width
+            400          // Maximum width in pixels
+        );
+        const maxLogoHeight = Math.min(
+            height * 0.2, // 20% of screen height
+            200          // Maximum height in pixels
+        );
+
+        // Calculate scale while maintaining aspect ratio
+        const scaleX = maxLogoWidth / this.logo.width;
+        const scaleY = maxLogoHeight / this.logo.height;
+        const scale = Math.min(scaleX, scaleY);
+        
+        this.logo.setScale(scale);
+    }
+
+    private handleResize(): void {
+        const { width, height } = this.scale;
+
+        // Update logo
+        if (this.logo) {
+            this.logo.setPosition(width * 0.5, height * 0.15);
+            this.updateLogoScale();
+        }
+
+        // Update title
+        if (this.title) {
+            this.title
+                .setPosition(width * 0.5, height * 0.35)
+                .setFontSize(getResponsiveFontSize(56));
+        }
+
+        // Update subtitle
+        if (this.subtitle) {
+            this.subtitle
+                .setPosition(width * 0.5, height * 0.45)
+                .setFontSize(getResponsiveFontSize(38));
+        }
+
+        // Recreate buttons with new positions
+        this.createLevelButtons();
     }
 
     private hexStringToNumber(hex: string): number {

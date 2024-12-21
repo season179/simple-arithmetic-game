@@ -25,8 +25,7 @@ export class AnswerButton {
             .text(0, 0, value.toString(), {
                 fontSize: `${fontSize}px`,
                 color: "#047857",
-                fontFamily: "Arial",
-                fontWeight: "bold" // Added bold weight for better visibility
+                fontFamily: "Arial Bold" // Changed to include bold in fontFamily
             })
             .setOrigin(0.5);
 

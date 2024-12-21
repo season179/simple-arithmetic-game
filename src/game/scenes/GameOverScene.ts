@@ -29,7 +29,7 @@ export class GameOverScene extends Scene {
 
         // Scoring System Explanation
         const scoringText = this.createScoringExplanation(data.ageGroup);
-        const scoringExplanation = this.add
+        this.add
             .text(width * 0.5, height * 0.45, scoringText, {
                 fontSize: `${getResponsiveFontSize(24)}px`,
                 color: "#4b5563",

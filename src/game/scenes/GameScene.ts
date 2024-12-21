@@ -56,8 +56,7 @@ export class GameScene extends Scene {
                     x: getResponsiveSize(12), 
                     y: getResponsiveSize(8) 
                 },
-                fontFamily: "Arial",
-                fontWeight: "bold"
+                fontFamily: "Arial Bold",
             })
             .setOrigin(1, 0)
             .setInteractive({ useHandCursor: true })
@@ -67,24 +66,21 @@ export class GameScene extends Scene {
             scoreText: this.add.text(getResponsiveSize(16), getResponsiveSize(16), "Score: 0", {
                 fontSize: `${scoreFontSize}px`,
                 color: "#1e40af",
-                fontFamily: "Arial",
-                fontWeight: "bold"
+                fontFamily: "Arial Bold",
             }),
             problemText: this.add
                 .text(width * 0.5, height * 0.3, "", {
                     fontSize: `${problemFontSize}px`,
                     color: "#1e40af",
-                    fontFamily: "Arial",
+                    fontFamily: "Arial Bold",
                     align: "center",
                     wordWrap: { width: width * 0.8 },
-                    fontWeight: "bold"
                 })
                 .setOrigin(0.5),
             feedbackText: this.add
                 .text(width * 0.5, height * 0.45, "", {
                     fontSize: `${feedbackFontSize}px`,
-                    fontFamily: "Arial",
-                    fontWeight: "bold"
+                    fontFamily: "Arial Bold",
                 })
                 .setOrigin(0.5),
             buttons: buttonsContainer,
@@ -209,7 +205,7 @@ export class GameScene extends Scene {
         if ("sequence" in this.currentProblem) {
             // Points for sequence problems
             if (this.state.ageGroup === 8) {
-                return 3; // Higher points for 8-year-olds
+                return 2;
             }
             return this.currentProblem.format === "numberSequence" ? 1 : 2;
         } else {
@@ -223,7 +219,7 @@ export class GameScene extends Scene {
             } else {
                 // For 8-year-olds
                 if (this.currentProblem.operation === "×") {
-                    return 4; // 4 points for multiplication
+                    return 3; // 4 points for multiplication
                 }
                 let points = this.currentProblem.result <= 10 ? 1 : 2;
                 if (this.currentProblem.format !== "missingEnd") {

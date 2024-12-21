@@ -30,8 +30,7 @@ export class MainMenuScene extends Scene {
             .text(width * 0.5, height * 0.35, "Math Adventure!", {
                 fontSize: `${getResponsiveFontSize(56)}px`,
                 color: "#2563eb",
-                fontFamily: "Arial",
-                fontWeight: "bold"
+                fontFamily: "Arial Bold",
             })
             .setOrigin(0.5);
 
@@ -40,8 +39,7 @@ export class MainMenuScene extends Scene {
             .text(width * 0.5, height * 0.45, "Choose Your Level:", {
                 fontSize: `${getResponsiveFontSize(38)}px`,
                 color: "#4b5563",
-                fontFamily: "Arial",
-                fontWeight: "bold"
+                fontFamily: "Arial Bold",
             })
             .setOrigin(0.5);
 
@@ -111,8 +109,7 @@ export class MainMenuScene extends Scene {
             .text(x, y, text, {
                 fontSize: `${fontSize}px`,
                 color: textColor,
-                fontFamily: "Arial",
-                fontWeight: "bold"
+                fontFamily: "Arial Bold",
             })
             .setOrigin(0.5);
 
